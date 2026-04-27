@@ -292,11 +292,57 @@ function SummaryPanel({ summary, expanded, onToggle, density }) {
   );
 }
 
+// ─── File upload bubble ───────────────────────────────────────
+function UserFileBubble({ filename, fileSize, fileType }) {
+  const ext = filename.split('.').pop().toLowerCase();
+  const iconName = ext === 'pdf' ? 'file-text'
+    : ext === 'xlsx' || ext === 'csv' ? 'file-spreadsheet'
+    : ext === 'docx' || ext === 'doc' ? 'file-text'
+    : 'paperclip';
+  const sizeLabel = fileSize < 1024 ? `${fileSize} B`
+    : fileSize < 1024 * 1024 ? `${(fileSize / 1024).toFixed(1)} KB`
+    : `${(fileSize / (1024 * 1024)).toFixed(1)} MB`;
+  return (
+    <div style={{
+      display: 'flex', gap: 8, alignItems: 'flex-start', justifyContent: 'flex-end',
+      marginBottom: 4, animation: 'msgIn 360ms cubic-bezier(.2,.7,.2,1) both',
+    }}>
+      <div style={{
+        maxWidth: '78%',
+        background: 'var(--purple-600)', color: '#fff',
+        borderRadius: '16px 4px 16px 16px',
+        padding: '10px 14px',
+        boxShadow: '0 2px 6px rgba(82, 29, 206, 0.20)',
+        display: 'flex', alignItems: 'center', gap: 10,
+      }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+          background: 'rgba(255,255,255,0.18)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Icon name={iconName} size={17} color="#fff" />
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.3,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
+            {filename}
+          </div>
+          <div style={{ fontSize: 11, opacity: 0.8, fontWeight: 500, marginTop: 1 }}>
+            {sizeLabel} · {ext.toUpperCase()}
+          </div>
+        </div>
+      </div>
+      <UserAvatar />
+    </div>
+  );
+}
+
 window.Icon = Icon;
 window.AIAvatar = AIAvatar;
 window.UserAvatar = UserAvatar;
 window.AIBubble = AIBubble;
 window.UserBubble = UserBubble;
+window.UserFileBubble = UserFileBubble;
 window.Typing = Typing;
 window.OptionButton = OptionButton;
 window.OptionRow = OptionRow;

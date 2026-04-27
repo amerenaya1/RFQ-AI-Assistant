@@ -169,71 +169,104 @@ const SUGGESTION_CHIPS = [
   'Sand 30 tons, concrete C25 80 m³',
 ];
 
-function Composer2({ onSend, disabled, hint, showHelper, showChips }) {
-  const [text, setText] = useSt('');
+function Composer2({ onSend, onFileUpload, disabled, hint, showHelper, showChips }) {
+  const [text, setText] = useSt(‘’);
   const [focus, setFocus] = useSt(false);
   const taRef = useRf(null);
-  const submit = () => { if (text.trim()) { onSend(text.trim()); setText(''); } };
+  const fileInputRef = useRf(null);
+  const submit = () => { if (text.trim()) { onSend(text.trim()); setText(‘’); } };
   const useChip = (chip) => {
     setText(chip);
     setTimeout(() => { taRef.current && taRef.current.focus(); }, 0);
   };
+  const handleFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file && onFileUpload) onFileUpload(file);
+    e.target.value = ‘’;
+  };
   return (
-    <div style={{ padding: '8px 12px 12px', borderTop: '1px solid #ECEBEF', background: 'rgba(255,255,255,0.92)' }}>
+    <div style={{ padding: ‘8px 12px 12px’, borderTop: ‘1px solid #ECEBEF’, background: ‘rgba(255,255,255,0.92)’ }}>
       {showHelper && (
         <div style={{
-          fontSize: 11.5, fontWeight: 500, color: 'var(--ink-600)',
-          textAlign: 'center', padding: '0 6px 6px', lineHeight: 1.35,
+          fontSize: 11.5, fontWeight: 500, color: ‘var(--ink-600)’,
+          textAlign: ‘center’, padding: ‘0 6px 6px’, lineHeight: 1.35,
         }}>
           Type your full material request — I’ll parse it and only ask what’s missing.
         </div>
       )}
       {showChips && (
         <div style={{
-          display: 'flex', gap: 6, overflowX: 'auto', padding: '2px 2px 8px',
-          scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
-        }} className="chat-scroll">
+          display: ‘flex’, gap: 6, overflowX: ‘auto’, padding: ‘2px 2px 8px’,
+          scrollbarWidth: ‘none’, WebkitOverflowScrolling: ‘touch’,
+        }} className=”chat-scroll”>
+          <button onClick={() => fileInputRef.current && fileInputRef.current.click()} style={{
+            flexShrink: 0, padding: ‘7px 12px’, borderRadius: 999,
+            background: ‘var(--purple-100)’, border: ‘1px solid var(--purple-300)’,
+            fontSize: 11.5, fontWeight: 700, color: ‘var(--purple-700)’,
+            fontFamily: ‘inherit’, cursor: ‘pointer’, whiteSpace: ‘nowrap’,
+            boxShadow: ‘0 1px 2px rgba(20,20,24,0.03)’,
+            display: ‘inline-flex’, alignItems: ‘center’, gap: 5,
+          }}>
+            <Icon name=”upload” size={11} color=”#521DCE”/>
+            Upload RFQ
+          </button>
           {SUGGESTION_CHIPS.map(chip => (
             <button key={chip} onClick={() => useChip(chip)} style={{
-              flexShrink: 0, padding: '7px 12px', borderRadius: 999,
-              background: '#fff', border: '1px solid #E2DEEF',
-              fontSize: 11.5, fontWeight: 600, color: 'var(--purple-700)',
-              fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap',
-              boxShadow: '0 1px 2px rgba(20,20,24,0.03)',
-              display: 'inline-flex', alignItems: 'center', gap: 5,
+              flexShrink: 0, padding: ‘7px 12px’, borderRadius: 999,
+              background: ‘#fff’, border: ‘1px solid #E2DEEF’,
+              fontSize: 11.5, fontWeight: 600, color: ‘var(--purple-700)’,
+              fontFamily: ‘inherit’, cursor: ‘pointer’, whiteSpace: ‘nowrap’,
+              boxShadow: ‘0 1px 2px rgba(20,20,24,0.03)’,
+              display: ‘inline-flex’, alignItems: ‘center’, gap: 5,
             }}>
-              <Icon name="sparkles" size={11} color="#521DCE"/>
+              <Icon name=”sparkles” size={11} color=”#521DCE”/>
               “{chip}”
             </button>
           ))}
         </div>
       )}
+      <input
+        ref={fileInputRef} type=”file”
+        accept=”.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.json”
+        style={{ display: ‘none’ }}
+        onChange={handleFileChange}
+      />
       <div style={{
-        display: 'flex', alignItems: 'flex-end', gap: 8,
-        background: '#fff', borderRadius: 22,
-        border: focus ? '1.5px solid var(--purple-400)' : '1px solid #E2DEEF',
-        padding: '6px 6px 6px 16px',
-        boxShadow: focus ? '0 4px 16px rgba(82,29,206,0.12)' : '0 1px 2px rgba(20,20,24,0.03)',
-        transition: 'all 140ms ease',
+        display: ‘flex’, alignItems: ‘flex-end’, gap: 8,
+        background: ‘#fff’, borderRadius: 22,
+        border: focus ? ‘1.5px solid var(--purple-400)’ : ‘1px solid #E2DEEF’,
+        padding: ‘6px 6px 6px 6px’,
+        boxShadow: focus ? ‘0 4px 16px rgba(82,29,206,0.12)’ : ‘0 1px 2px rgba(20,20,24,0.03)’,
+        transition: ‘all 140ms ease’,
       }}>
+        <button onClick={() => fileInputRef.current && fileInputRef.current.click()}
+          disabled={disabled} title=”Upload RFQ file”
+          style={{
+            width: 34, height: 34, borderRadius: ‘50%’, flexShrink: 0,
+            background: ‘transparent’, border: 0, cursor: disabled ? ‘default’ : ‘pointer’,
+            display: ‘flex’, alignItems: ‘center’, justifyContent: ‘center’,
+            color: ‘var(--ink-500)’,
+          }}>
+          <Icon name=”paperclip” size={17} color={disabled ? ‘#D0D0D8’ : ‘#8A8A96’} />
+        </button>
         <textarea ref={taRef} value={text} onChange={e => setText(e.target.value)}
           onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
-          placeholder={hint || 'Type your request or answer…'} rows={1} disabled={disabled}
-          style={{ flex: 1, border: 0, outline: 'none', resize: 'none',
-            fontSize: 14, lineHeight: 1.4, fontFamily: 'inherit',
-            background: 'transparent', color: 'var(--ink-900)', padding: '8px 0', maxHeight: 80 }}/>
+          onKeyDown={e => { if (e.key === ‘Enter’ && !e.shiftKey) { e.preventDefault(); submit(); } }}
+          placeholder={hint || ‘Type your request or answer…’} rows={1} disabled={disabled}
+          style={{ flex: 1, border: 0, outline: ‘none’, resize: ‘none’,
+            fontSize: 14, lineHeight: 1.4, fontFamily: ‘inherit’,
+            background: ‘transparent’, color: ‘var(--ink-900)’, padding: ‘8px 0’, maxHeight: 80 }}/>
         <button onClick={submit} disabled={!text.trim() || disabled} style={{
-          width: 34, height: 34, borderRadius: '50%',
-          background: text.trim() ? 'var(--purple-600)' : '#E2DEEF',
-          color: '#fff', border: 0, cursor: text.trim() ? 'pointer' : 'default',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          width: 34, height: 34, borderRadius: ‘50%’,
+          background: text.trim() ? ‘var(--purple-600)’ : ‘#E2DEEF’,
+          color: ‘#fff’, border: 0, cursor: text.trim() ? ‘pointer’ : ‘default’,
+          display: ‘flex’, alignItems: ‘center’, justifyContent: ‘center’, flexShrink: 0,
         }}>
-          <Icon name="arrow-up" size={16} color="#fff" strokeWidth={2.5} />
+          <Icon name=”arrow-up” size={16} color=”#fff” strokeWidth={2.5} />
         </button>
       </div>
-      <div style={{ textAlign: 'center', fontSize: 10.5, color: 'var(--ink-500)', marginTop: 6, fontWeight: 500 }}>
-        Smart parse · Multi-item · Disty AI
+      <div style={{ textAlign: ‘center’, fontSize: 10.5, color: ‘var(--ink-500)’, marginTop: 6, fontWeight: 500 }}>
+        Smart parse · Upload RFQ · Disty AI
       </div>
     </div>
   );
@@ -510,6 +543,98 @@ Return JSON only.`;
     } else {
       pushAI("Flagged with the seller. You'll hear back within 4 hours.", 500).then(() => setRichKey('done-issue'));
     }
+  }
+
+  // ─── File upload handler ───
+  async function handleFileUpload(file) {
+    setMessages(m => [...m, { kind: 'file', filename: file.name, fileSize: file.size, fileType: file.type, id: rid() }]);
+    setTyping(true);
+    setRichKey(null);
+    setPhase('filling'); // leave welcome phase so chips disappear
+
+    let content = '';
+    try {
+      content = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result || '');
+        reader.onerror = reject;
+        // PDF and office formats: attempt raw text extraction
+        reader.readAsText(file);
+      });
+    } catch (e) {
+      content = '';
+    }
+
+    // Strip binary garbage — keep printable ASCII + common unicode
+    const cleaned = content.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ' ')
+      .replace(/\s{4,}/g, ' ').trim().slice(0, 6000);
+
+    if (!cleaned) {
+      setTyping(false);
+      setPhase('welcome');
+      setMessages(m => [...m, { kind: 'ai', text: `I couldn't read **${file.name}**. Please upload a plain-text, CSV, or JSON file — or paste your items directly.`, id: rid() }]);
+      return;
+    }
+
+    let parsed = null;
+    try {
+      const prompt = `You are an RFQ item parser for a B2B construction marketplace. Parse the following document into structured procurement items.
+
+Return ONLY valid JSON (no markdown), an array. Each item: {category, product_type, specs:{...}, quantity, unit, missing_fields}.
+
+Categories: cement, steel, blocks, aggregates, concrete, tiles, paint, plumbing, electrical, waterproofing, other.
+For cement, missing_fields candidates: type, packaging, quantity.
+For steel: type, diameter, grade, quantity.
+For blocks: type, size, quantity.
+For aggregates: type, size, quantity.
+For concrete: grade, quantity.
+Generic: quantity, specifications.
+
+Set missing_fields to fields you genuinely cannot infer. Infer aggressively.
+
+Document content:
+"""
+${cleaned}
+"""
+
+Return JSON only.`;
+      const reply = await window.claude.complete(prompt);
+      const jsonStr = reply.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/, '').trim();
+      const arr = JSON.parse(jsonStr);
+      if (Array.isArray(arr) && arr.length > 0) {
+        parsed = arr.map(it => ({
+          id: rid(),
+          category: (it.category || 'other').toLowerCase(),
+          product_type: it.product_type || null,
+          specs: it.specs || {},
+          quantity: it.quantity || null,
+          unit: it.unit || null,
+          missing_fields: Array.isArray(it.missing_fields) ? it.missing_fields : [],
+          status: (it.missing_fields || []).length === 0 ? 'complete' : 'incomplete',
+        }));
+      }
+    } catch (e) { /* fall through */ }
+
+    if (!parsed) parsed = localParse(cleaned);
+
+    if (!parsed || parsed.length === 0) {
+      setTyping(false);
+      setPhase('welcome');
+      setMessages(m => [...m, { kind: 'ai', text: `I read **${file.name}** but couldn't find any procurement items in it. Try a file with a bill of quantities or list of materials.`, id: rid() }]);
+      return;
+    }
+
+    setItems(parsed);
+    setTyping(false);
+    const completeCount = parsed.filter(i => i.status === 'complete').length;
+    setMessages(m => [...m, {
+      kind: 'ai',
+      text: `Analysed **${file.name}** — found **${parsed.length} item${parsed.length === 1 ? '' : 's'}**.${completeCount > 0 ? ` ${completeCount} already complete.` : ''}`,
+      id: rid(),
+    }]);
+    setItemsPanelOpen(true);
+    setRichKey('parsed-items');
+    setTimeout(() => continueFilling(parsed), 1400);
   }
 
   function reset() {
@@ -792,7 +917,9 @@ Return JSON only.`;
             {messages.map(m => (
               m.kind === 'ai'
                 ? <AIBubble key={m.id}>{aiTextRender(m.text)}</AIBubble>
-                : <UserBubble key={m.id}>{m.text}</UserBubble>
+                : m.kind === 'file'
+                  ? <UserFileBubble key={m.id} filename={m.filename} fileSize={m.fileSize} fileType={m.fileType} />
+                  : <UserBubble key={m.id}>{m.text}</UserBubble>
             ))}
             {typing && <Typing />}
             {richKey && !typing && (
@@ -802,7 +929,7 @@ Return JSON only.`;
             )}
           </div>
 
-          <Composer2 onSend={handleFreeform} disabled={typing}
+          <Composer2 onSend={handleFreeform} onFileUpload={handleFileUpload} disabled={typing}
             hint={phase === 'welcome' ? 'Type your full material request…' : 'Type to answer or ask…'}
             showHelper={phase === 'welcome'}
             showChips={phase === 'welcome'} />
